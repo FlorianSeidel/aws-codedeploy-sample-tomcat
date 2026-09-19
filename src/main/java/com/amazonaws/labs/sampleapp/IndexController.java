@@ -31,6 +31,8 @@ import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.InstanceStatus;
 import com.amazonaws.services.ec2.model.Reservation;
+import com.amazonaws.xray.AWSXRay;
+import com.amazonaws.xray.entities.Subsegment;
 
 @Controller
 public class IndexController {
@@ -53,12 +55,15 @@ public class IndexController {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String displayIndex(Model model) {
+        final Subsegment trace = AWSXRay.beginSubsegment("render-deployment-status");
+        trace.putAnnotation("application", applicationName);
         LOGGER.info("Application name set to: " + applicationName);
         model.addAttribute("applicationName", applicationName);
         LOGGER.info("Deployment Group Name set to: " + deploymentGroupName);
         model.addAttribute("deploymentGroupName", deploymentGroupName);
         if (deploymentGroupName.contains("Production")) {
     		model.addAttribute("instanceIds", Collections.<String>emptyList());
+			AWSXRay.endSubsegment();
     		return "/index";
     	}
         
@@ -101,6 +106,7 @@ public class IndexController {
         }
         model.addAttribute("instanceIds", instanceIds);
         model.addAttribute("instanceStates", instanceStates);
+        AWSXRay.endSubsegment();
         return "/index";
     }
 
