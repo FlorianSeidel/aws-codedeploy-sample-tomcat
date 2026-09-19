@@ -55,6 +55,7 @@ public class IndexController {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String displayIndex(Model model) {
+        // This emits a proprietary AWS X-Ray subsegment, not an OpenTelemetry span.
         final Subsegment trace = AWSXRay.beginSubsegment("render-deployment-status");
         trace.putAnnotation("application", applicationName);
         LOGGER.info("Application name set to: " + applicationName);
